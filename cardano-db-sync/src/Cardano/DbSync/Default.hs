@@ -11,7 +11,7 @@ module Cardano.DbSync.Default
 
 import           Cardano.Prelude
 
-import           Cardano.BM.Trace (Trace, logDebug, logInfo)
+import           Cardano.BM.Trace (Trace, logDebug, logInfo, logWarning)
 
 import qualified Cardano.Db as DB
 
@@ -142,26 +142,28 @@ handleLedgerEvents tracer lenv point =
           -- Commit everything in the db *AFTER* the epoch rewards have been inserted, the orphaned
           -- rewards removed and the bulk operations finalized.
           lift DB.transactionCommit
-          liftIO . logInfo tracer $ "Starting epoch " <> textShow (unEpochNo en)
+          liftIO . logWarning tracer $ "Starting epoch " <> textShow (unEpochNo en)
         LedgerStartAtEpoch en ->
           -- This is different from the previous case in that the db-sync started
           -- in this epoch, for example after a restart, instead of after an epoch boundary.
           liftIO . logInfo tracer $ "Starting at epoch " <> textShow (unEpochNo en)
-        LedgerRewards _details rwds -> do
-          liftIO . logInfo tracer $ mconcat
+        LedgerRewards details rwds -> do
+          liftIO . logWarning tracer $ mconcat
             [ "Handling ", show (Map.size (Generic.rwdRewards rwds)), " rewards for epoch "
             , show (unEpochNo $ Generic.rwdEpoch rwds), " ", renderPoint point
             ]
+          liftIO . logWarning tracer $ mconcat [ "LedgerRewards: ", textShow details, " ",  show rwds]
           postEpochRewards lenv rwds point
         LedgerStakeDist sdist -> do
-          liftIO . logInfo tracer $ mconcat
+          liftIO . logWarning tracer $ mconcat
             [ "Handling ", show (Map.size (Generic.sdistStakeMap sdist)), " stakes for epoch "
             , show (unEpochNo $ Generic.sdistEpochNo sdist), " ", renderPoint point
             ]
           postEpochStake lenv sdist point
         LedgerRewardDist rwd ->
           lift $ stashPoolRewards tracer lenv rwd
-        LedgerMirDist md ->
+        LedgerMirDist md -> do
+          liftIO $ logWarning tracer $ "LedgerMirDist " <> textShow point
           lift $ stashMirRewards tracer lenv md
         LedgerPoolReap en drs ->
           insertPoolDepositRefunds lenv (Generic.Rewards en $ convertPoolDepositReunds (leNetwork lenv) drs)
@@ -201,9 +203,11 @@ stashPoolRewards
     => Trace IO Text -> LedgerEnv -> Generic.Rewards
     -> ReaderT SqlBackend m ()
 stashPoolRewards tracer lenv rmap = do
+  liftIO $ logWarning tracer $ "------ Rewards: " <> textShow rmap
   mMirRwd <- liftIO . atomically $ tryTakeTMVar (leMirRewards lenv)
   case mMirRwd of
-    Nothing ->
+    Nothing -> do
+      liftIO $ logWarning tracer "------ Rewards: Nothing"
       liftIO . atomically $ putTMVar (lePoolRewards lenv) rmap
     Just mirMap -> do
       let totalRwds = Generic.mergeRewards rmap mirMap
@@ -215,9 +219,11 @@ stashMirRewards
     => Trace IO Text -> LedgerEnv -> Generic.Rewards
     -> ReaderT SqlBackend m ()
 stashMirRewards tracer lenv mirMap = do
+  liftIO $ logWarning tracer $ "------ Mir Rewards: " <> textShow mirMap
   mRwds <- liftIO . atomically $ tryTakeTMVar (lePoolRewards lenv)
   case mRwds of
-    Nothing ->
+    Nothing -> do
+      liftIO $ logWarning tracer "------ Mir Rewards: Nothing"
       liftIO . atomically $ putTMVar (leMirRewards lenv) mirMap
     Just rmap -> do
       let totalRwds = Generic.mergeRewards rmap mirMap

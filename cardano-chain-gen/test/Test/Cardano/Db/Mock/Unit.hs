@@ -42,7 +42,6 @@ unitTests :: IOManager -> [(Text, Text)] -> TestTree
 unitTests iom knownMigrations =
     testGroup "unit tests"
       [ test "simple forge blocks" forgeBlocks
-      , test "Mir Cert" mirReward
 --      , test "test rewards empty last part of epoch" rewardsEmptyChainLast
 --      , test "sync one block" addSimple
 --      , test "sync small chain" addSimpleChain
@@ -55,7 +54,8 @@ unitTests iom knownMigrations =
 --      , test "genesis config without stakes" configNoStakes
 --      , test "simple tx" addSimpleTx
 --      , test "simple tx in Shelley era" addSimpleTxShelley
---      , test "rewards" simpleRewards
+      , test "rewards" simpleRewards
+--      , test "Mir Cert" mirReward
 --      , test "shelley rewards from multiple sources" rewardsShelley
       ]
   where
@@ -373,14 +373,15 @@ mirReward =
       fillWithBlocksEqually interpreter mockServer 75
 
       -- mir from treasury
-      tx2 <- withAlonzoLedgerState interpreter $ Alonzo.mkSimpleDCertTx (StakeIndex 0)
+      tx2 <- withAlonzoLedgerState interpreter $ Alonzo.mkSimpleDCertTx (StakeIndex 1)
         (\cred -> DCertMir $ MIRCert TreasuryMIR (StakeAddressesMIR (Map.singleton cred (DeltaCoin 1000))))
-      tx3 <- withAlonzoLedgerState interpreter $ Alonzo.mkSimpleDCertTx (StakeIndex 0)
-        (\cred -> DCertMir $ MIRCert TreasuryMIR (StakeAddressesMIR (Map.singleton cred (DeltaCoin 2000))))
+      tx3 <- withAlonzoLedgerState interpreter $ Alonzo.mkSimpleDCertTx (StakeIndex 1)
+        (\cred -> DCertMir $ MIRCert ReservesMIR (StakeAddressesMIR (Map.singleton cred (DeltaCoin 1000))))
       blk2 <- forgeNext interpreter $ MockBlock [TxAlonzo tx2, TxAlonzo tx3] (NodeId 1)
       atomically $ addBlock mockServer blk2
 
       fillEpochEqually interpreter mockServer
+
       assertRewardCount dbSync 1
   where
     testLabel = "mirReward"

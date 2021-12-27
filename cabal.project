@@ -7,6 +7,7 @@ packages:
   cardano-db-tool
   cardano-smash-server
   cardano-chain-gen
+  ../cardano-ledger-specs/eras/shelley/impl
 
 constraints:
     libsystemd-journal >= 1.4.4
@@ -122,7 +123,6 @@ source-repository-package
     eras/byron/ledger/executable-spec
     eras/byron/ledger/impl
     eras/byron/ledger/impl/test
-    eras/shelley/impl
     -- eras/shelley/test-suite
     eras/shelley-ma/impl
     -- eras/shelley-ma/test-suite

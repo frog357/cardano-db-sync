@@ -68,12 +68,21 @@ forceInsertRewards
     => Trace IO Text -> LedgerEnv -> Generic.Rewards -> ReaderT SqlBackend m ()
 forceInsertRewards tracer lenv rwds = do
   let mapSize = Generic.elemCount rwds
-  count <- fromIntegral <$> DB.queryEpochRewardCount (unEpochNo $ Generic.rwdEpoch rwds)
+  let epochNo = unEpochNo $ Generic.rwdEpoch rwds
+  count <- fromIntegral <$> DB.queryEpochRewardCount epochNo
   when (mapSize > count) $ do
+    DB.transactionCommit
+--    panic "123"
+    rewards <- DB.queryRewardsSpend epochNo
+    rewards' <- DB.queryRewards (epochNo - 2)
     liftIO . logWarning tracer $ mconcat
-                                [ "forceInsertRewards: ", textShow mapSize, " rewards for epoch "
+                                [ "forceInsertRewards: ", textShow mapSize, " instead of "
+                                , textShow count, " rewards for epoch "
                                 , textShow (unEpochNo $ Generic.rwdEpoch rwds), " is "
-                                , textShow (Generic.totalAda rwds), " ADA"
+                                , textShow (Generic.totalAda rwds), " ADA "
+                                , textShow rewards
+                                , textShow rewards'
+                                , textShow epochNo
                                 ]
     icache <- updateIndexCache lenv (Generic.rewardsStakeCreds rwds) (Generic.rewardsPoolHashKeys rwds)
     res <- runExceptT $ insertRewards (Generic.rwdEpoch rwds - 2) icache (Map.toList $ Generic.rwdRewards rwds)
@@ -87,10 +96,18 @@ insertEpochInterleaved
      -> ExceptT SyncNodeError (ReaderT SqlBackend m) ()
 insertEpochInterleaved tracer bop =
     case bop of
-      BulkRewardChunk epochNo _ icache rwds ->
+      BulkRewardChunk epochNo _ icache rwds -> do
+        liftIO $ logWarning tracer $ "BulkRewardChunk insterting " <> show epochNo <> " " <> show rwds
         insertRewards epochNo icache rwds
+        rewards <- lift $ DB.queryRewards (unEpochNo epochNo)
+        liftIO $ logWarning tracer $ "BulkRewardChunk insterted " <> " " <> show (length rewards) <> " " <>  show rewards
+        rewards' <- lift $ DB.queryRewardsSpend (2 + unEpochNo epochNo)
+        liftIO $ logWarning tracer $ "BulkRewardChunk insterted " <> show rewards'
+        lift DB.transactionCommit
+--        when (unEpochNo epochNo == 3) $
+--          panic "456"
       BulkRewardReport epochNo _ rewardCount total -> do
-        liftIO $ reportRewards epochNo rewardCount
+        liftIO $ reportRewards epochNo rewardCount total
         lift $ insertEpochRewardTotalReceived epochNo total
       BulkStakeDistChunk epochNo _ icache sDistChunk ->
         insertEpochStake tracer icache epochNo sDistChunk
@@ -105,12 +122,12 @@ insertEpochInterleaved tracer bop =
           , ", ", textShow count, " stake addresses"
           ]
 
-    reportRewards :: EpochNo -> Int -> IO ()
-    reportRewards epochNo rewardCount =
+    reportRewards :: EpochNo -> Int -> Shelley.Coin -> IO ()
+    reportRewards epochNo rewardCount total =
       logInfo tracer $
         mconcat
           [ "insertEpochInterleaved: Epoch ", textShow (unEpochNo epochNo)
-          , ", ", textShow rewardCount, " rewards"
+          , ", ", textShow rewardCount, " rewards ", textShow total
           ]
 
 postEpochRewards
