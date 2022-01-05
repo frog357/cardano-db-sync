@@ -184,4 +184,5 @@ test-suite cardano-chain-gen
                       , ouroboros-network
                       , ouroboros-network-framework
                       , persistent
+                      , plutus-example
                       , postgresql-simple
