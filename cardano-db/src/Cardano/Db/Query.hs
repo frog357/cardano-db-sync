@@ -116,8 +116,8 @@ import           Cardano.Db.Error
 import           Cardano.Db.Schema
 import           Cardano.Db.Types
 
-{-# ANN module ("Hlint: ignore Redundant ^." :: Text) #-}
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Redundant ^." -}
+{- HLINT ignore "Fuse on/on" -}
 
 -- If you squint, these Esqueleto queries almost look like SQL queries.
 

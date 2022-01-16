@@ -34,7 +34,7 @@ import           Database.Esqueleto.Experimental (InnerJoin (InnerJoin), SqlBack
                    desc, from, not_, on, orderBy, select, sum_, table, val, where_, (:&) ((:&)),
                    (==.), (^.))
 
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Fuse on/on" -}
 
 validateEpochRewards
     :: (MonadBaseControl IO m, MonadIO m)

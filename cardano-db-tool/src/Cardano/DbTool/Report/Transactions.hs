@@ -25,8 +25,9 @@ import           Data.Time.Clock (UTCTime)
 import           Database.Esqueleto.Experimental (SqlBackend, Value (Value, unValue), from,
                    innerJoin, just, on, select, table, type (:&) ((:&)), val, where_, (&&.), (==.),
                    (^.))
-{-# ANN module ("Hlint: ignore Redundant ^." :: Text) #-}
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+
+{- HLINT ignore "Redundant ^." -}
+{- HLINT ignore "Fuse on/on" -}
 
 reportTransactions :: [Text] -> IO ()
 reportTransactions addrs =

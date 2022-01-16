@@ -26,7 +26,7 @@ import           Database.Esqueleto.Experimental (SqlBackend, SqlExpr, Value (..
                    subList_select, table, where_, (:&) ((:&)), (==.), (^.))
 import           System.Random.Shuffle (shuffleM)
 
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Fuse on/on" -}
 
 queryOfflinePoolData :: MonadIO m => POSIXTime -> Int -> ReaderT SqlBackend m [PoolFetchRetry]
 queryOfflinePoolData now maxCount = do
@@ -67,9 +67,6 @@ queryNewPoolFetch now = do
         pmr <- from $ table @PoolMetadataRef
         groupBy (pmr ^. PoolMetadataRefPoolId)
         pure $ max_ (pmr ^. PoolMetadataRefId)
-      -- subList_select . from $ \ pmr -> do
-      --   groupBy (pmr ^. PoolMetadataRefPoolId)
-      --   pure $ max_ (pmr ^. PoolMetadataRefId)
 
     convert
         :: (Value PoolHashId, Value PoolMetadataRefId, Value Text, Value ByteString)

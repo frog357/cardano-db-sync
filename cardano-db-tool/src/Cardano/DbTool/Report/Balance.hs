@@ -21,8 +21,8 @@ import qualified Data.Text.IO as Text
 import           Database.Esqueleto.Experimental (SqlBackend, Value (..), from, innerJoin, just, on,
                    select, sum_, table, type (:&) ((:&)), val, where_, (&&.), (<=.), (==.), (^.))
 
-{-# ANN module ("Hlint: ignore Redundant ^." :: Text) #-}
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Redundant ^." -}
+{- HLINT ignore "Fuse on/on" -}
 
 reportBalance :: [Text] -> IO ()
 reportBalance saddr = do

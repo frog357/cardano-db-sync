@@ -36,7 +36,7 @@ import           Database.Esqueleto.Experimental (SqlBackend, Value (..), desc, 
 
 import           Ouroboros.Consensus.Cardano.Block (StandardCrypto)
 
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Fuse on/on" -}
 
 queryPoolHashId :: MonadIO m => ByteString -> ReaderT SqlBackend m (Maybe PoolHashId)
 queryPoolHashId hash = do

@@ -26,7 +26,7 @@ import           Database.Esqueleto.Experimental (SqlBackend, Value (Value), asc
                    groupBy, having, innerJoin, on, orderBy, select, sum_, table, unValue, val,
                    where_, (:&) ((:&)), (<.), (==.), (^.))
 
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Fuse on/on" -}
 
 -- For any stake address which has seen a withdrawal, the sum of the withdrawals for that address
 -- should be less than or equal to the sum of the rewards for that address.

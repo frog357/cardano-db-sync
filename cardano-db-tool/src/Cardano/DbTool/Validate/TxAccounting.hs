@@ -18,7 +18,6 @@ import           Control.Monad.Trans.Reader (ReaderT)
 
 import           Data.Int (Int64)
 import qualified Data.List as List
-import           Data.Text (Text)
 import           Data.Word (Word64)
 
 import           Database.Esqueleto.Experimental (Entity (entityVal), SqlBackend,
@@ -27,7 +26,7 @@ import           Database.Esqueleto.Experimental (Entity (entityVal), SqlBackend
 
 import qualified System.Random as Random
 
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Fuse on/on" -}
 
 validateTxAccounting :: IO ()
 validateTxAccounting = do

@@ -26,7 +26,7 @@ import           Database.Esqueleto.Experimental (SqlBackend, delete, from, in_,
                    (>.), (^.))
 
 -- Hlint warns about another version of this operator.
-{-# ANN module ("Hlint: ignore Redundant ^." :: Text) #-}
+{- HLINT ignore "Redundant ^." -}
 
 -- This is a hack/workaround for an issue related to the `Reward` table.
 --

@@ -27,7 +27,7 @@ import           Database.Esqueleto.Experimental (SqlBackend, Value (..), asc, d
 
 import           Text.Printf (printf)
 
-{-# ANN module ("HLint: ignore Fuse on/on" :: Text) #-}
+{- HLINT ignore "Fuse on/on" -}
 
 reportLatestStakeRewards :: [Text] -> IO ()
 reportLatestStakeRewards saddr = do
